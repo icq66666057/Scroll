@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+
+contract SimpleWallet {
+    // Адрес владельца кошелька
+    address public owner;
+
+    // Конструктор устанавливает владельца контракта при его развертывании
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // Модификатор для проверки, является ли отправитель владельцем контракта
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can call this function.");
+        _;
+    }
+
+    // Функция для пополнения кошелька (отправка ETH на адрес контракта)
+    receive() external payable {}
+
+    // Функция для вывода всех средств с кошелька владельцем
+    function withdrawAll() public onlyOwner {
+        uint amount = address(this).balance;
+        require(amount > 0, "No funds available.");
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Transfer failed.");
+    }
+
+    // Функция для проверки баланса контракта
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+}
